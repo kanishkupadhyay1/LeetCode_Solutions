@@ -1,27 +1,41 @@
 class Solution {
-    Integer[][][] dp;
-
     public int minimumDistance(String word) {
-        dp = new Integer[27][27][word.length()];
-        return solve(word, 26, 26, 0);
+        int n = word.length();
+        int total = 0;
+
+        // total cost using one finger
+        for (int i = 1; i < n; i++) {
+            total += dist(word.charAt(i - 1), word.charAt(i));
+        }
+
+        int[] dp = new int[26]; // savings
+        int maxSave = 0;
+
+        for (int i = 1; i < n; i++) {
+            int b = word.charAt(i - 1) - 'A';
+            int a = word.charAt(i) - 'A';
+
+            int[] newDp = dp.clone();
+
+            for (int c = 0; c < 26; c++) {
+                int save = dist(b, a) - dist(c, a);
+                newDp[b] = Math.max(newDp[b], dp[c] + save);
+            }
+
+            dp = newDp;
+            maxSave = Math.max(maxSave, dp[b]);
+        }
+
+        return total - maxSave;
     }
 
-    private int solve(String word, int f1, int f2, int i) {
-        if (i == word.length()) return 0;
-
-        if (dp[f1][f2][i] != null)
-            return dp[f1][f2][i];
-
-        int curr = word.charAt(i) - 'A';
-
-        int useF1 = dist(f1, curr) + solve(word, curr, f2, i + 1);
-        int useF2 = dist(f2, curr) + solve(word, f1, curr, i + 1);
-
-        return dp[f1][f2][i] = Math.min(useF1, useF2);
+    private int dist(char a, char b) {
+        int x1 = (a - 'A') / 6, y1 = (a - 'A') % 6;
+        int x2 = (b - 'A') / 6, y2 = (b - 'A') % 6;
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
 
     private int dist(int a, int b) {
-        if (a == 26) return 0;
         int x1 = a / 6, y1 = a % 6;
         int x2 = b / 6, y2 = b % 6;
         return Math.abs(x1 - x2) + Math.abs(y1 - y2);
